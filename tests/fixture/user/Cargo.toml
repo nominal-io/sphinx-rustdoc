@@ -1,0 +1,10 @@
+# A crate that uses the fixture crate, for a build that documents both. Its rustdoc JSON is
+# committed as user.json; `just fixture` regenerates it.
+[package]
+name = "user"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+fixture = { path = ".." }

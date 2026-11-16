@@ -1,0 +1,11 @@
+# A crate that exercises each case sphinx-rustdoc renders. Its rustdoc JSON is committed as
+# fixture.json, so the tests need no Rust toolchain; `just fixture` regenerates it.
+[package]
+name = "fixture"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+# not part of any enclosing workspace; user/ uses this crate
+[workspace]
+members = ["user"]
