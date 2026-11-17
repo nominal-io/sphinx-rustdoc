@@ -103,7 +103,8 @@ Signatures render from the JSON's type tree, not from source text, so every path
 shown as users write it: `fn config(&self) -> Config`, not the source's `crate::config::Config`.
 The renderer covers generics and bounds, `where` clauses, lifetimes, references, `impl Trait`,
 `dyn Trait`, tuples, slices, arrays, function pointers, qualified paths (`<T as Trait>::Output`),
-and `async`, `const` and `unsafe`.
+and `async`, `const` and `unsafe`. A `#[non_exhaustive]` struct, enum or variant shows the
+attribute before its declaration, on the same line.
 
 ### Links to other crates
 

@@ -90,6 +90,8 @@ def test_signatures_render_from_the_type_tree(site: Site) -> None:
 
 def test_enum_variants_and_their_fields(site: Site) -> None:
     error = site.page(f"{PAGES}/enum.Error")
+    assert "#[non_exhaustive] pub enum Error" in error
+    assert "#[non_exhaustive]" not in site.page(f"{PAGES}/struct.Rid")
     assert "Timeout(u64)" in error
     assert "message: String" in error
     assert "What the server said." in error

@@ -320,8 +320,22 @@ def fn_tail(name: str, sig: dict, name_kind: str = "keyword", generics: dict | N
 # -- items ----------------------------------------------------------------------------------------
 
 
+def attributes(item: dict) -> Toks:
+    """The attributes an item's declaration shows. `#[non_exhaustive]` is the one that changes how
+    other crates can use a struct, enum or variant.
+    """
+    # other attributes are dicts, such as {"other": "#[attr = Inline(Hint)]"}
+    if "non_exhaustive" in item["attrs"]:
+        return [punct("#["), Tok("non_exhaustive"), punct("]"), SPACE]
+    return []
+
+
 def signature(crate: Crate, item_id: int, name: str | None = None) -> Toks:
     """The declaration of an item, as on docs.rs, without fields or bodies."""
+    return [*attributes(crate.index[str(item_id)]), *declaration(crate, item_id, name)]
+
+
+def declaration(crate: Crate, item_id: int, name: str | None = None) -> Toks:
     item = crate.index[str(item_id)]
     kind = kind_of(item)
     inner = item["inner"][kind]
