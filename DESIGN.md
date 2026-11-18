@@ -112,8 +112,13 @@ A path into another crate links to that crate's docs:
 
 1. the crate's pages in the same build, if it's in `rustdoc_crates`, found by the path and kind
    both crates' JSON records for the item
-2. the crate's `html_root_url`, which the JSON records, as it does for the standard library
-3. otherwise docs.rs: `https://docs.rs/<crate>/latest/<path>/<kind>.<Name>.html`, built from the
+2. the crate's sphinx-rustdoc pages in another project, if it's in `rustdoc_crate_urls`, built
+   from the JSON's path and kind in this extension's own layout, as `dirhtml` serves it:
+   `<url>/<path>/<kind>.<Name>/` for an item with a page, `<url>/<module path>/#<kind>.<name>` for
+   one on its module's page. The link works when the other project shows the item at the path this
+   crate's JSON records for it.
+3. the crate's `html_root_url`, which the JSON records, as it does for the standard library
+4. otherwise docs.rs: `https://docs.rs/<crate>/latest/<path>/<kind>.<Name>.html`, built from the
    JSON's path and kind for the item
 
 `rustdoc_unlinked_crates` lists crates whose paths render as text, with no link, such as a crate

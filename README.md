@@ -36,12 +36,13 @@ Building the JSON runs `cargo rustdoc` on the package, with `RUSTC_BOOTSTRAP=1`,
 | `rustdoc_crates` | `{}` | The crates to document. Each takes a `package` to build, or a `json` file built earlier, relative to `conf.py`. |
 | `rustdoc_output` | `"ref/rust"` | The folder the pages are written to, inside the source folder. A build deletes any page there it didn't write. |
 | `rustdoc_unlinked_crates` | `[]` | Crates whose items show as text, with no link to their docs |
+| `rustdoc_crate_urls` | `{}` | Crates another project documents with sphinx-rustdoc, each with the URL of its pages, such as `{"mycrate_core": "/core/ref/rust/"}`. Links to their items go to those pages, as Sphinx's `dirhtml` builder serves them. |
 
 ### Link to items
 
 The `rust` domain links to items by path, such as ``{rust:struct}`mycrate::Client` ``. The end of a path is enough when only one item of the role's type ends that way: ``{rust:struct}`Client` ``. A role that finds no item is a build warning. Roles: `any`, `mod`, `struct`, `enum`, `union`, `trait`, `type`, `fn`, `method`, `field`, `variant`, `const`, `static` and `macro`.
 
-Items in other crates link to their docs: a crate in `rustdoc_crates` to its pages in the same build, the standard library's to doc.rust-lang.org, and others to docs.rs.
+Items in other crates link to their docs: a crate in `rustdoc_crates` to its pages in the same build, a crate in `rustdoc_crate_urls` to its pages there, the standard library's to doc.rust-lang.org, and others to docs.rs.
 
 ## Develop
 

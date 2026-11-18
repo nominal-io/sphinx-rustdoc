@@ -73,7 +73,9 @@ class Impls:
 class Crate:
     """One crate's rustdoc JSON, with the public path of each item it documents."""
 
-    def __init__(self, doc: dict, unlinked_crates: frozenset[str] = frozenset()):
+    def __init__(
+        self, doc: dict, unlinked_crates: frozenset[str] = frozenset(), crate_urls: dict[str, str] | None = None
+    ):
         version = doc.get("format_version")
         if version not in SUPPORTED_FORMAT_VERSIONS:
             # checked first: another format version's JSON may not have the fields read below
@@ -95,6 +97,8 @@ class Crate:
         }
         self.external_crates: dict[str, dict] = doc["external_crates"]
         self.unlinked_crates = unlinked_crates
+        # crates another project publishes sphinx-rustdoc pages for, by name: where those pages are
+        self.crate_urls: dict[str, str] = crate_urls or {}
         # the public path each documented item is shown at, crate name first
         self.canonical: dict[int, tuple[str, ...]] = {}
         # each public module's entries, in source order
@@ -302,6 +306,8 @@ class Crate:
         crate = self.external_crates.get(str(summary["crate_id"]))
         if crate is None or crate["name"] in self.unlinked_crates:
             return None
+        if crate["name"] in self.crate_urls:
+            return pages_url(self.crate_urls[crate["name"]], summary["path"], summary["kind"])
         root = crate.get("html_root_url")
         if not root:
             if crate["name"] in STD_CRATES:
@@ -321,3 +327,23 @@ class Crate:
             return None
         *modules, name = path
         return f"{root}{'/'.join(modules)}/{prefix}.{name}.html"
+
+
+def pages_url(root: str, path: list[str], kind: str) -> str | None:
+    """An item's place in another project's sphinx-rustdoc pages, as Sphinx's dirhtml builder serves
+    them: a page for each module and each kind in PAGE_PREFIX, and an entry on its module's page,
+    anchored as the domain anchors it, for a module-level item."""
+    if not root.endswith("/"):
+        root += "/"
+    if kind == "module":
+        return f"{root}{'/'.join(path)}/"
+    if kind == "variant":
+        *modules, enum, variant = path
+        return f"{root}{'/'.join(modules)}/enum.{enum}/#variant.{variant}"
+    *modules, name = path
+    if kind in PAGE_PREFIX:
+        return f"{root}{'/'.join(modules)}/{PAGE_PREFIX[kind]}.{name}/"
+    prefix = URL_PREFIX.get(kind)
+    if prefix is None:
+        return None
+    return f"{root}{'/'.join(modules)}/#{prefix}.{name}"

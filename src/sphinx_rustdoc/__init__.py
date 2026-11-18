@@ -81,6 +81,7 @@ def generate(app: Sphinx) -> None:
             f"sphinx-rustdoc: rustdoc_output must be a folder inside the docs source folder, not {value!r}"
         )
     unlinked = frozenset(app.config.rustdoc_unlinked_crates)
+    crate_urls = dict(app.config.rustdoc_crate_urls)
     written: set[Path] = set()
     for label, options in app.config.rustdoc_crates.items():
         if "json" in options:
@@ -92,7 +93,7 @@ def generate(app: Sphinx) -> None:
         else:
             raise ExtensionError(f"sphinx-rustdoc: rustdoc_crates[{label!r}] needs a `package` or a `json` file")
         raw = json_path.read_bytes()
-        crate = Crate(json.loads(raw), unlinked)
+        crate = Crate(json.loads(raw), unlinked, crate_urls)
         LOADED[crate.name] = crate
         crate_pages = pages.write(crate, output, hashlib.sha256(raw).hexdigest()[:16])
         written.update(crate_pages)
@@ -110,6 +111,8 @@ def setup(app: Sphinx) -> dict[str, Any]:
     app.add_config_value("rustdoc_output", "ref/rust", "env", str)
     # crates whose items render as text, with no link to their docs
     app.add_config_value("rustdoc_unlinked_crates", [], "env", list)
+    # crate name: the URL of the sphinx-rustdoc pages another project publishes for it, for links to its items
+    app.add_config_value("rustdoc_crate_urls", {}, "env", dict)
     app.add_domain(RustDomain)
     app.add_directive_to_domain("rust", "item", ItemDirective)
     app.add_directive_to_domain("rust", "members", MembersDirective)

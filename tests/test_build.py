@@ -11,7 +11,7 @@ from sphinx.util.inventory import InventoryFile
 
 from sphinx_rustdoc import json_file, markdown, render
 from sphinx_rustdoc.domain import reexports
-from sphinx_rustdoc.model import Crate
+from sphinx_rustdoc.model import Crate, pages_url
 
 PAGES = "ref/rust/fixture"
 
@@ -183,6 +183,29 @@ def test_unlinked_crates_render_as_text(tmp_path) -> None:
     client = links(site, f"{PAGES}/struct.Client")
     assert "String" not in client
     assert "https://doc.rust-lang.org/1.98.1/core/convert/trait.Into.html" in client["Into"]
+
+
+def test_crate_urls_link_to_another_projects_pages(tmp_path) -> None:
+    site = build(tmp_path, conf="rustdoc_crate_urls = {'alloc': '/alloc-docs/ref/rust/'}")
+    assert site.result.returncode == 0, site.result.stdout + site.result.stderr
+    client = links(site, f"{PAGES}/struct.Client")
+    assert "/alloc-docs/ref/rust/alloc/string/struct.String/" in client["String"]
+    # crates not in the setting keep their own docs
+    assert "https://doc.rust-lang.org/1.98.1/core/convert/trait.Into.html" in client["Into"]
+
+
+def test_pages_url_follows_the_page_layout() -> None:
+    root = "/streaming/ref/rust"
+    assert pages_url(root, ["streaming"], "module") == "/streaming/ref/rust/streaming/"
+    assert (
+        pages_url(root, ["streaming", "stream", "Opts"], "struct")
+        == "/streaming/ref/rust/streaming/stream/struct.Opts/"
+    )
+    assert (
+        pages_url(root, ["streaming", "Error", "Io"], "variant")
+        == "/streaming/ref/rust/streaming/enum.Error/#variant.Io"
+    )
+    assert pages_url(root, ["streaming", "client"], "function") == "/streaming/ref/rust/streaming/#fn.client"
 
 
 def test_summary_resolves_reference_definitions() -> None:
